@@ -6,7 +6,7 @@ import os
 import time
 import json
 import re
-
+import pickle
 import tensorflow as tf
 import numpy as np
 
@@ -80,7 +80,7 @@ class LanguageModel(object):
 
         # the input token_ids and word embeddings
         self.token_ids = tf.placeholder(DTYPE_INT,
-                               shape=(batch_size, unroll_steps),
+                               shape=(batch_size, 80),
                                name='token_ids')
         # the word embeddings
         with tf.device("/cpu:0"):
@@ -88,8 +88,9 @@ class LanguageModel(object):
                 "embedding", [n_tokens_vocab, projection_dim],
                 dtype=DTYPE,
             )
-            self.embedding = tf.nn.embedding_lookup(self.embedding_weights,
+            self.pre_embedding = tf.nn.embedding_lookup(self.embedding_weights,
                                                 self.token_ids)
+            self.embedding = tf.reshape(self.pre_embedding, [batch_size, -1, projection_dim*2])
 
         # if a bidirectional LM then make placeholders for reverse
         # model and embeddings
@@ -346,7 +347,7 @@ class LanguageModel(object):
             lstm_inputs = [self.embedding, self.embedding_reverse]
         else:
             lstm_inputs = [self.embedding]
-
+        print("embedding", self.embedding)
         # now compute the LSTM outputs
         cell_clip = self.options['lstm'].get('cell_clip')
         proj_clip = self.options['lstm'].get('proj_clip')
@@ -357,13 +358,14 @@ class LanguageModel(object):
             print("USING SKIP CONNECTIONS")
 
         lstm_outputs = []
+        lstm_outputs_packed = []    # add by why2011btv
         for lstm_num, lstm_input in enumerate(lstm_inputs):
             lstm_cells = []
             for i in range(n_lstm_layers):
                 if projection_dim < lstm_dim:
                     # are projecting down output
                     lstm_cell = tf.nn.rnn_cell.LSTMCell(
-                        lstm_dim, num_proj=projection_dim,
+                        lstm_dim, num_proj=200,
                         cell_clip=cell_clip, proj_clip=proj_clip)
                 else:
                     lstm_cell = tf.nn.rnn_cell.LSTMCell(
@@ -409,20 +411,51 @@ class LanguageModel(object):
                         tf.unstack(lstm_input, axis=1),
                         initial_state=self.init_lstm_state[-1])
                 self.final_lstm_state.append(final_state)
-
+            print("_lstm_output_unpacked",_lstm_output_unpacked)
             # (batch_size * unroll_steps, 512)
             lstm_output_flat = tf.reshape(
-                tf.stack(_lstm_output_unpacked, axis=1), [-1, projection_dim])
+                tf.stack(_lstm_output_unpacked, axis=1), [-1, 200])
+            print("lstm_output_flat",lstm_output_flat)
+            lstm_outputs_packed.append(tf.stack(_lstm_output_unpacked, axis=1))    # add by why2011btv
             if self.is_training:
                 # add dropout to output
                 lstm_output_flat = tf.nn.dropout(lstm_output_flat,
                     keep_prob)
             tf.add_to_collection('lstm_output_embeddings',
                 _lstm_output_unpacked)
+            
+            post_lstm_output_flat = tf.reshape(lstm_output_flat, [batch_size*80, 100])
 
-            lstm_outputs.append(lstm_output_flat)
+            lstm_outputs.append(post_lstm_output_flat)
 
         self._build_loss(lstm_outputs)
+        #if not self.is_training:   # add by why2011btv
+            #self._cal_loss(lstm_outputs_packed)
+            
+    def _cal_loss(self, lstm_outputs_packed):   # add by why2011btv
+        '''
+        Create:
+            self.batch_softmax_norm_logit
+        '''
+        #batch_size = self.options['batch_size']
+        #unroll_steps = self.options['unroll_steps']
+        projection_dim = self.options['lstm']['projection_dim']
+        #n_tokens_vocab = self.options['n_tokens_vocab']
+
+        next_ids = [self.next_token_id]    
+        # next_token_id: batch_size * [rel, tail, eos] (needs to be written by myself in the data generating process)
+        for id_placeholder, _lstm_outputs_packed in zip(next_ids, lstm_outputs_packed):    
+            # lstm_outputs use list because of bidirectional LM
+            # flatten the LSTM output and next token id gold to shape:
+            # _lstm_outputs_packed: [batch_size, unroll_steps, projection_dim]
+            next_token_id_flat = tf.reshape(id_placeholder, [-1, 1])    
+            # id_placeholder: (batch_size, unroll_steps)   unroll_steps = 3
+
+            with tf.control_dependencies([_lstm_outputs_packed]):    
+                # control_dependencies: you must calcalate lstm_output_flat first before entering the following part
+                predict_tail = _lstm_outputs_packed[:,1,:]
+                un_norm = tf.matmul(predict_tail, tf.transpose(self.softmax_W)) + self.softmax_b
+                self.batch_softmax_norm_logit = tf.nn.softmax(un_norm)    # [batch_size, vocab_size]
 
     def _build_loss(self, lstm_outputs):
         '''
@@ -441,7 +474,7 @@ class LanguageModel(object):
         def _get_next_token_placeholders(suffix):
             name = 'next_token_id' + suffix
             id_placeholder = tf.placeholder(DTYPE_INT,
-                                   shape=(batch_size, unroll_steps),
+                                   shape=(batch_size, 80),
                                    name=name)
             return id_placeholder
 
@@ -490,7 +523,7 @@ class LanguageModel(object):
             # (batch_size * unroll_steps, softmax_dim)
             # Flatten and reshape the token_id placeholders
             next_token_id_flat = tf.reshape(id_placeholder, [-1, 1])
-
+            
             with tf.control_dependencies([lstm_output_flat]):
                 if self.is_training and self.sample_softmax:
                     losses = tf.nn.sampled_softmax_loss(
@@ -693,6 +726,7 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
             initializer=tf.constant_initializer(0.0), trainable=False)
         norm_summaries = []
         for k in range(n_gpus):
+            #k = 3
             with tf.device('/gpu:%d' % k):
                 with tf.variable_scope('lm', reuse=k > 0):
                     # calculate the loss for one model replica and get
@@ -757,8 +791,10 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
 
     # do the training loop
     bidirectional = options.get('bidirectional', False)
-    with tf.Session(config=tf.ConfigProto(
-            allow_soft_placement=True)) as sess:
+    config=tf.ConfigProto(
+            allow_soft_placement=True)
+    config.gpu_options.allow_growth = True 
+    with tf.Session(config = config) as sess:
         sess.run(init)
 
         # load the checkpoint data if needed
@@ -780,7 +816,7 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
         batch_size = options['batch_size']
         unroll_steps = options['unroll_steps']
         n_train_tokens = options.get('n_train_tokens', 768648884)
-        n_tokens_per_batch = batch_size * unroll_steps * n_gpus
+        n_tokens_per_batch = batch_size * 80 * n_gpus
         n_batches_per_epoch = int(n_train_tokens / n_tokens_per_batch)
         n_batches_total = options['n_epochs'] * n_batches_per_epoch
         print("Training for %s epochs and %s batches" % (
@@ -800,7 +836,7 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
         if not char_inputs:
             feed_dict = {
                 model.token_ids:
-                    np.zeros([batch_size, unroll_steps], dtype=np.int64)
+                    np.zeros([batch_size, 80], dtype=np.int64)
                 for model in models
             }
         else:
@@ -829,11 +865,12 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
         init_state_values = sess.run(init_state_tensors, feed_dict=feed_dict)
 
         t1 = time.time()
-        data_gen = data.iter_batches(batch_size * n_gpus, unroll_steps)
+        data_gen = data.iter_batches(batch_size * n_gpus, 80)
         for batch_no, batch in enumerate(data_gen, start=1):
 
             # slice the input in the batch for the feed_dict
             X = batch
+            
             feed_dict = {t: v for t, v in zip(
                                         init_state_tensors, init_state_values)}
             for k in range(n_gpus):
@@ -957,7 +994,7 @@ def test(options, ckpt_file, data, batch_size=256):
     if char_inputs:
         max_chars = options['char_cnn']['max_characters_per_token']
 
-    unroll_steps = 1
+    unroll_steps = 3
 
     config = tf.ConfigProto(allow_soft_placement=True)
     with tf.Session(config=config) as sess:
@@ -966,7 +1003,7 @@ def test(options, ckpt_file, data, batch_size=256):
             # NOTE: the number of tokens we skip in the last incomplete
             # batch is bounded above batch_size * unroll_steps
             test_options['batch_size'] = batch_size
-            test_options['unroll_steps'] = 1
+            test_options['unroll_steps'] = 3
             model = LanguageModel(test_options, False)
             # we use the "Saver" class to load the variables
             loader = tf.train.Saver()
@@ -1006,8 +1043,9 @@ def test(options, ckpt_file, data, batch_size=256):
         t1 = time.time()
         batch_losses = []
         total_loss = 0.0
+        predict_dict = []
         for batch_no, batch in enumerate(
-                                data.iter_batches(batch_size, 1), start=1):
+                                data.iter_batches(batch_size, 3), start=1):
             # slice the input in the batch for the feed_dict
             X = batch
 
@@ -1020,11 +1058,15 @@ def test(options, ckpt_file, data, batch_size=256):
             )
 
             ret = sess.run(
-                [model.total_loss, final_state_tensors],
+                [model.total_loss, final_state_tensors, model.batch_softmax_norm_logit],
                 feed_dict=feed_dict
             )
-
-            loss, init_state_values = ret
+            
+            # model.batch_softmax_norm_logit, predicted_logit add by why2011btv
+            loss, init_state_values, predicted_logit = ret
+            predict_dict.append(predicted_logit)
+            print("prediction finished for batch %d" % (batch_no))
+            
             batch_losses.append(loss)
             batch_perplexity = np.exp(loss)
             total_loss += loss
@@ -1032,7 +1074,9 @@ def test(options, ckpt_file, data, batch_size=256):
 
             print("batch=%s, batch_perplexity=%s, avg_perplexity=%s, time=%s" %
                 (batch_no, batch_perplexity, avg_perplexity, time.time() - t1))
-
+            
+    with open("/home/why2011btv/predicted_logit.txt", 'wb') as file_out:    # add by why2011btv
+        pickle.dump(predict_dict, file_out)
     avg_loss = np.mean(batch_losses)
     print("FINSIHED!  AVERAGE PERPLEXITY = %s" % np.exp(avg_loss))
 

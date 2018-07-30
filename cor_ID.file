@@ -1,0 +1,132 @@
+nohup: ignoring input
+WARNING:tensorflow:From /home/why2011btv/anaconda3/lib/python3.5/site-packages/tensorflow/python/util/tf_should_use.py:170: initialize_all_variables (from tensorflow.python.ops.variables) is deprecated and will be removed after 2017-03-02.
+Instructions for updating:
+Use `tf.global_variables_initializer` instead.
+2018-07-27 10:23:38.205434: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.1 instructions, but these are available on your machine and could speed up CPU computations.
+2018-07-27 10:23:38.205453: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.2 instructions, but these are available on your machine and could speed up CPU computations.
+2018-07-27 10:23:38.205458: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX instructions, but these are available on your machine and could speed up CPU computations.
+2018-07-27 10:23:38.205462: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX2 instructions, but these are available on your machine and could speed up CPU computations.
+2018-07-27 10:23:38.205466: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use FMA instructions, but these are available on your machine and could speed up CPU computations.
+2018-07-27 10:23:40.091962: I tensorflow/core/common_runtime/gpu/gpu_device.cc:940] Found device 0 with properties: 
+name: TITAN X (Pascal)
+major: 6 minor: 1 memoryClockRate (GHz) 1.531
+pciBusID 0000:05:00.0
+Total memory: 11.91GiB
+Free memory: 11.75GiB
+2018-07-27 10:23:40.213129: W tensorflow/stream_executor/cuda/cuda_driver.cc:523] A non-primary context 0x56092dc670b0 exists before initializing the StreamExecutor. We haven't verified StreamExecutor works with that.
+2018-07-27 10:23:40.213916: I tensorflow/core/common_runtime/gpu/gpu_device.cc:940] Found device 1 with properties: 
+name: TITAN X (Pascal)
+major: 6 minor: 1 memoryClockRate (GHz) 1.531
+pciBusID 0000:06:00.0
+Total memory: 11.91GiB
+Free memory: 11.75GiB
+2018-07-27 10:23:40.214795: I tensorflow/core/common_runtime/gpu/gpu_device.cc:961] DMA: 0 1 
+2018-07-27 10:23:40.214807: I tensorflow/core/common_runtime/gpu/gpu_device.cc:971] 0:   Y Y 
+2018-07-27 10:23:40.214811: I tensorflow/core/common_runtime/gpu/gpu_device.cc:971] 1:   Y Y 
+2018-07-27 10:23:40.214818: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1030] Creating TensorFlow device (/gpu:0) -> (device: 0, name: TITAN X (Pascal), pci bus id: 0000:05:00.0)
+2018-07-27 10:23:40.214824: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1030] Creating TensorFlow device (/gpu:1) -> (device: 1, name: TITAN X (Pascal), pci bus id: 0000:06:00.0)
+WARNING:tensorflow:Error encountered when serializing lstm_output_embeddings.
+Type is unsupported, or the types of the items don't match field type in CollectionDef.
+'list' object has no attribute 'name'
+2018-07-27 10:23:55.093307: W tensorflow/core/framework/op_kernel.cc:1158] Invalid argument: indices[0,1] = 15034 is not in [0, 14779)
+	 [[Node: lm/embedding_lookup = Gather[Tindices=DT_INT64, Tparams=DT_FLOAT, _class=["loc:@lm/embedding"], validate_indices=true, _device="/job:localhost/replica:0/task:0/cpu:0"](lm/embedding/read, _arg_lm/token_ids_0_5)]]
+2018-07-27 10:23:55.093419: W tensorflow/core/framework/op_kernel.cc:1158] Invalid argument: indices[0,1] = 15034 is not in [0, 14779)
+	 [[Node: lm/embedding_lookup = Gather[Tindices=DT_INT64, Tparams=DT_FLOAT, _class=["loc:@lm/embedding"], validate_indices=true, _device="/job:localhost/replica:0/task:0/cpu:0"](lm/embedding/read, _arg_lm/token_ids_0_5)]]
+2018-07-27 10:23:55.093467: W tensorflow/core/framework/op_kernel.cc:1158] Invalid argument: indices[0,1] = 15034 is not in [0, 14779)
+	 [[Node: lm/embedding_lookup = Gather[Tindices=DT_INT64, Tparams=DT_FLOAT, _class=["loc:@lm/embedding"], validate_indices=true, _device="/job:localhost/replica:0/task:0/cpu:0"](lm/embedding/read, _arg_lm/token_ids_0_5)]]
+2018-07-27 10:23:55.093522: W tensorflow/core/framework/op_kernel.cc:1158] Invalid argument: indices[0,1] = 15034 is not in [0, 14779)
+	 [[Node: lm/embedding_lookup = Gather[Tindices=DT_INT64, Tparams=DT_FLOAT, _class=["loc:@lm/embedding"], validate_indices=true, _device="/job:localhost/replica:0/task:0/cpu:0"](lm/embedding/read, _arg_lm/token_ids_0_5)]]
+2018-07-27 10:23:55.093565: W tensorflow/core/framework/op_kernel.cc:1158] Invalid argument: indices[0,1] = 15034 is not in [0, 14779)
+	 [[Node: lm/embedding_lookup = Gather[Tindices=DT_INT64, Tparams=DT_FLOAT, _class=["loc:@lm/embedding"], validate_indices=true, _device="/job:localhost/replica:0/task:0/cpu:0"](lm/embedding/read, _arg_lm/token_ids_0_5)]]
+2018-07-27 10:23:55.093604: W tensorflow/core/framework/op_kernel.cc:1158] Invalid argument: indices[0,1] = 15034 is not in [0, 14779)
+	 [[Node: lm/embedding_lookup = Gather[Tindices=DT_INT64, Tparams=DT_FLOAT, _class=["loc:@lm/embedding"], validate_indices=true, _device="/job:localhost/replica:0/task:0/cpu:0"](lm/embedding/read, _arg_lm/token_ids_0_5)]]
+2018-07-27 10:23:55.093643: W tensorflow/core/framework/op_kernel.cc:1158] Invalid argument: indices[0,1] = 15034 is not in [0, 14779)
+	 [[Node: lm/embedding_lookup = Gather[Tindices=DT_INT64, Tparams=DT_FLOAT, _class=["loc:@lm/embedding"], validate_indices=true, _device="/job:localhost/replica:0/task:0/cpu:0"](lm/embedding/read, _arg_lm/token_ids_0_5)]]
+2018-07-27 10:23:55.093681: W tensorflow/core/framework/op_kernel.cc:1158] Invalid argument: indices[0,1] = 15034 is not in [0, 14779)
+	 [[Node: lm/embedding_lookup = Gather[Tindices=DT_INT64, Tparams=DT_FLOAT, _class=["loc:@lm/embedding"], validate_indices=true, _device="/job:localhost/replica:0/task:0/cpu:0"](lm/embedding/read, _arg_lm/token_ids_0_5)]]
+2018-07-27 10:23:55.453939: W tensorflow/core/framework/op_kernel.cc:1158] Invalid argument: indices[0,1] = 15034 is not in [0, 14779)
+	 [[Node: lm/embedding_lookup = Gather[Tindices=DT_INT64, Tparams=DT_FLOAT, _class=["loc:@lm/embedding"], validate_indices=true, _device="/job:localhost/replica:0/task:0/cpu:0"](lm/embedding/read, _arg_lm/token_ids_0_5)]]
+2018-07-27 10:23:55.453993: W tensorflow/core/framework/op_kernel.cc:1158] Invalid argument: indices[0,1] = 15034 is not in [0, 14779)
+	 [[Node: lm/embedding_lookup = Gather[Tindices=DT_INT64, Tparams=DT_FLOAT, _class=["loc:@lm/embedding"], validate_indices=true, _device="/job:localhost/replica:0/task:0/cpu:0"](lm/embedding/read, _arg_lm/token_ids_0_5)]]
+(145050, 81)
+USING SKIP CONNECTIONS
+USING SKIP CONNECTIONS
+[['global_step:0', TensorShape([])],
+ ['lm/embedding:0', TensorShape([Dimension(14779), Dimension(512)])],
+ ['lm/rnn/multi_rnn_cell/cell_0/lstm_cell/bias:0',
+  TensorShape([Dimension(16384)])],
+ ['lm/rnn/multi_rnn_cell/cell_0/lstm_cell/kernel:0',
+  TensorShape([Dimension(1024), Dimension(16384)])],
+ ['lm/rnn/multi_rnn_cell/cell_0/lstm_cell/projection/kernel:0',
+  TensorShape([Dimension(4096), Dimension(512)])],
+ ['lm/rnn/multi_rnn_cell/cell_1/lstm_cell/bias:0',
+  TensorShape([Dimension(16384)])],
+ ['lm/rnn/multi_rnn_cell/cell_1/lstm_cell/kernel:0',
+  TensorShape([Dimension(1024), Dimension(16384)])],
+ ['lm/rnn/multi_rnn_cell/cell_1/lstm_cell/projection/kernel:0',
+  TensorShape([Dimension(4096), Dimension(512)])],
+ ['lm/softmax/W:0', TensorShape([Dimension(14779), Dimension(512)])],
+ ['lm/softmax/b:0', TensorShape([Dimension(14779)])],
+ ['train_perplexity:0', TensorShape([])]]
+Training for 10 epochs and 72520 batches
+Traceback (most recent call last):
+  File "/home/why2011btv/anaconda3/lib/python3.5/site-packages/tensorflow/python/client/session.py", line 1139, in _do_call
+    return fn(*args)
+  File "/home/why2011btv/anaconda3/lib/python3.5/site-packages/tensorflow/python/client/session.py", line 1121, in _run_fn
+    status, run_metadata)
+  File "/home/why2011btv/anaconda3/lib/python3.5/contextlib.py", line 66, in __exit__
+    next(self.gen)
+  File "/home/why2011btv/anaconda3/lib/python3.5/site-packages/tensorflow/python/framework/errors_impl.py", line 466, in raise_exception_on_not_ok_status
+    pywrap_tensorflow.TF_GetCode(status))
+tensorflow.python.framework.errors_impl.InvalidArgumentError: indices[0,1] = 15034 is not in [0, 14779)
+	 [[Node: lm/embedding_lookup = Gather[Tindices=DT_INT64, Tparams=DT_FLOAT, _class=["loc:@lm/embedding"], validate_indices=true, _device="/job:localhost/replica:0/task:0/cpu:0"](lm/embedding/read, _arg_lm/token_ids_0_5)]]
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "bin/train_elmo.py", line 108, in <module>
+    main()
+  File "bin/train_elmo.py", line 97, in main
+    train(options, data, n_gpus, tf_save_dir, tf_log_dir)
+  File "/home/why2011btv/anaconda3/lib/python3.5/site-packages/bilm-0.1-py3.5.egg/bilm/training.py", line 888, in train
+    feed_dict=feed_dict
+  File "/home/why2011btv/anaconda3/lib/python3.5/site-packages/tensorflow/python/client/session.py", line 789, in run
+    run_metadata_ptr)
+  File "/home/why2011btv/anaconda3/lib/python3.5/site-packages/tensorflow/python/client/session.py", line 997, in _run
+    feed_dict_string, options, run_metadata)
+  File "/home/why2011btv/anaconda3/lib/python3.5/site-packages/tensorflow/python/client/session.py", line 1132, in _do_run
+    target_list, options, run_metadata)
+  File "/home/why2011btv/anaconda3/lib/python3.5/site-packages/tensorflow/python/client/session.py", line 1152, in _do_call
+    raise type(e)(node_def, op, message)
+tensorflow.python.framework.errors_impl.InvalidArgumentError: indices[0,1] = 15034 is not in [0, 14779)
+	 [[Node: lm/embedding_lookup = Gather[Tindices=DT_INT64, Tparams=DT_FLOAT, _class=["loc:@lm/embedding"], validate_indices=true, _device="/job:localhost/replica:0/task:0/cpu:0"](lm/embedding/read, _arg_lm/token_ids_0_5)]]
+
+Caused by op 'lm/embedding_lookup', defined at:
+  File "bin/train_elmo.py", line 108, in <module>
+    main()
+  File "bin/train_elmo.py", line 97, in main
+    train(options, data, n_gpus, tf_save_dir, tf_log_dir)
+  File "/home/why2011btv/anaconda3/lib/python3.5/site-packages/bilm-0.1-py3.5.egg/bilm/training.py", line 730, in train
+    model = LanguageModel(options, True)
+  File "/home/why2011btv/anaconda3/lib/python3.5/site-packages/bilm-0.1-py3.5.egg/bilm/training.py", line 71, in __init__
+    self._build()
+  File "/home/why2011btv/anaconda3/lib/python3.5/site-packages/bilm-0.1-py3.5.egg/bilm/training.py", line 336, in _build
+    self._build_word_embeddings()
+  File "/home/why2011btv/anaconda3/lib/python3.5/site-packages/bilm-0.1-py3.5.egg/bilm/training.py", line 92, in _build_word_embeddings
+    self.token_ids)
+  File "/home/why2011btv/anaconda3/lib/python3.5/site-packages/tensorflow/python/ops/embedding_ops.py", line 122, in embedding_lookup
+    return maybe_normalize(_do_gather(params[0], ids, name=name))
+  File "/home/why2011btv/anaconda3/lib/python3.5/site-packages/tensorflow/python/ops/embedding_ops.py", line 42, in _do_gather
+    return array_ops.gather(params, ids, name=name)
+  File "/home/why2011btv/anaconda3/lib/python3.5/site-packages/tensorflow/python/ops/gen_array_ops.py", line 1179, in gather
+    validate_indices=validate_indices, name=name)
+  File "/home/why2011btv/anaconda3/lib/python3.5/site-packages/tensorflow/python/framework/op_def_library.py", line 767, in apply_op
+    op_def=op_def)
+  File "/home/why2011btv/anaconda3/lib/python3.5/site-packages/tensorflow/python/framework/ops.py", line 2506, in create_op
+    original_op=self._default_original_op, op_def=op_def)
+  File "/home/why2011btv/anaconda3/lib/python3.5/site-packages/tensorflow/python/framework/ops.py", line 1269, in __init__
+    self._traceback = _extract_stack()
+
+InvalidArgumentError (see above for traceback): indices[0,1] = 15034 is not in [0, 14779)
+	 [[Node: lm/embedding_lookup = Gather[Tindices=DT_INT64, Tparams=DT_FLOAT, _class=["loc:@lm/embedding"], validate_indices=true, _device="/job:localhost/replica:0/task:0/cpu:0"](lm/embedding/read, _arg_lm/token_ids_0_5)]]
+
