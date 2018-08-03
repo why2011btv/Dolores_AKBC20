@@ -17,22 +17,30 @@ class MYDataset(object):
         while i <= self.paths_repre_by_IDs.shape[0]:
             if (i + batch_size) > self.paths_repre_by_IDs.shape[0]:
                 i = 0
-            token_ids = np.zeros([batch_size, 80], np.int32)
-            next_token_id = np.zeros([batch_size, 80], np.int32)
+            token_ids = np.zeros([batch_size, num_steps], np.int32)
+            next_token_id = np.zeros([batch_size, num_steps], np.int32)
+            token_ids_reverse = np.zeros([batch_size, num_steps], np.int32)
+            next_token_id_reverse = np.zeros([batch_size, num_steps], np.int32)
             
             token_ids = self.paths_repre_by_IDs[i:i+batch_size,0:-1]    # [batch_size, num_steps] (model.token_ids)
             next_token_id[:,0:-1] = self.paths_repre_by_IDs[i:i+batch_size,2:]
             next_token_id[:,-1:] = np.full((batch_size,1), 14778)
+            
+            token_ids_reverse = np.flip(self.paths_repre_by_IDs[i:i+batch_size,1:],1)
+            next_token_id_reverse[:,0:-1] = np.flip(self.paths_repre_by_IDs[i:i+batch_size,:-2],1)
+            next_token_id_reverse[:,-1:] = np.full((batch_size,1), 14778)
             i += batch_size
             X = {'token_ids': token_ids,
-                 'next_token_id': next_token_id}
+                 'next_token_id': next_token_id,
+                 'token_ids_reverse': token_ids_reverse,
+                 'next_token_id_reverse': next_token_id_reverse}
             yield X
 
 def main():
     file_input_20180713 = open("/home/why2011btv/research/node2vec/ID_together_walk_X_ids.txt",'rb')
     context_ids_large = pickle.load(file_input_20180713)
+    #context_ids_large = context_ids_large[0:10,:]
     print(context_ids_large.shape)    # 145050,81
-    
     # load the vocab
     #vocab = load_vocab(args.vocab_file, 50)
 
@@ -41,13 +49,13 @@ def main():
     n_gpus = 1
 
     # number of tokens in training data
-    n_train_tokens = 145050*81
+    n_train_tokens = context_ids_large.shape[0] * context_ids_large.shape[1]
     # 237+14541+1
     n_tokens_vocab = 14779
     
 
     options = {
-     'bidirectional': False,
+     'bidirectional': True,
 
 #     'char_cnn': {'activation': 'relu',
 #      'embedding': {'dim': 16},
@@ -74,7 +82,7 @@ def main():
     
      'all_clip_norm_val': 10.0,
     
-     'n_epochs': 10,
+     'n_epochs': 6,
      'n_train_tokens': n_train_tokens,
      'batch_size': batch_size,
      'n_tokens_vocab': n_tokens_vocab,
@@ -91,7 +99,7 @@ def main():
     #    X = batch
     #    print(batch_no, batch)
     
-    save_dir = './20180729'
+    save_dir = './20180802'
     tf_save_dir = save_dir
     tf_log_dir = save_dir
     train(options, data, n_gpus, tf_save_dir, tf_log_dir)

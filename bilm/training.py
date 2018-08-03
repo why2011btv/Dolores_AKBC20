@@ -9,7 +9,7 @@ import re
 import pickle
 import tensorflow as tf
 import numpy as np
-
+from datetime import datetime
 from tensorflow.python.ops.init_ops import glorot_uniform_initializer
 
 from .data import Vocabulary, UnicodeCharsVocabulary
@@ -74,13 +74,13 @@ class LanguageModel(object):
         n_tokens_vocab = self.options['n_tokens_vocab']
         batch_size = self.options['batch_size']
         unroll_steps = self.options['unroll_steps']
-
+        num_steps = unroll_steps * 2
         # LSTM options
         projection_dim = self.options['lstm']['projection_dim']
 
         # the input token_ids and word embeddings
         self.token_ids = tf.placeholder(DTYPE_INT,
-                               shape=(batch_size, 80),
+                               shape=(batch_size, num_steps),
                                name='token_ids')
         # the word embeddings
         with tf.device("/cpu:0"):
@@ -96,11 +96,12 @@ class LanguageModel(object):
         # model and embeddings
         if self.bidirectional:
             self.token_ids_reverse = tf.placeholder(DTYPE_INT,
-                               shape=(batch_size, unroll_steps),
+                               shape=(batch_size, num_steps),
                                name='token_ids_reverse')
             with tf.device("/cpu:0"):
-                self.embedding_reverse = tf.nn.embedding_lookup(
+                self.pre_embedding_reverse = tf.nn.embedding_lookup(
                     self.embedding_weights, self.token_ids_reverse)
+                self.embedding_reverse = tf.reshape(self.pre_embedding_reverse, [batch_size, -1, projection_dim*2])
 
     def _build_word_char_embeddings(self):
         '''
@@ -323,7 +324,8 @@ class LanguageModel(object):
         n_tokens_vocab = self.options['n_tokens_vocab']
         batch_size = self.options['batch_size']
         unroll_steps = self.options['unroll_steps']
-
+        num_steps = unroll_steps * 2
+        
         # LSTM options
         lstm_dim = self.options['lstm']['dim']
         projection_dim = self.options['lstm']['projection_dim']
@@ -345,6 +347,8 @@ class LanguageModel(object):
         # get the LSTM inputs
         if self.bidirectional:
             lstm_inputs = [self.embedding, self.embedding_reverse]
+            print("len(self.embedding): ",self.embedding)
+            print("len(self.embedding_reverse): ",self.embedding_reverse)
         else:
             lstm_inputs = [self.embedding]
         print("embedding", self.embedding)
@@ -411,12 +415,13 @@ class LanguageModel(object):
                         tf.unstack(lstm_input, axis=1),
                         initial_state=self.init_lstm_state[-1])
                 self.final_lstm_state.append(final_state)
-            print("_lstm_output_unpacked",_lstm_output_unpacked)
+                
+            print("len(_lstm_output_unpacked): ",len(_lstm_output_unpacked))
             # (batch_size * unroll_steps, 512)
             lstm_output_flat = tf.reshape(
                 tf.stack(_lstm_output_unpacked, axis=1), [-1, 200])
             print("lstm_output_flat",lstm_output_flat)
-            lstm_outputs_packed.append(tf.stack(_lstm_output_unpacked, axis=1))    # add by why2011btv
+            
             if self.is_training:
                 # add dropout to output
                 lstm_output_flat = tf.nn.dropout(lstm_output_flat,
@@ -424,25 +429,47 @@ class LanguageModel(object):
             tf.add_to_collection('lstm_output_embeddings',
                 _lstm_output_unpacked)
             
-            post_lstm_output_flat = tf.reshape(lstm_output_flat, [batch_size*80, 100])
-
+            post_lstm_output_flat = tf.reshape(lstm_output_flat, [batch_size*num_steps, 100])
+            post_lstm_output_packed = tf.reshape(tf.stack(_lstm_output_unpacked, axis=1), [batch_size, num_steps, 100])
+            
+            lstm_outputs_packed.append(post_lstm_output_packed)    # add by why2011btv
+            
             lstm_outputs.append(post_lstm_output_flat)
 
-        self._build_loss(lstm_outputs)
-        #if not self.is_training:   # add by why2011btv
-            #self._cal_loss(lstm_outputs_packed)
-            
-    def _cal_loss(self, lstm_outputs_packed):   # add by why2011btv
+        self._build_loss(lstm_outputs, lstm_outputs_packed)
         '''
+        if not self.is_training:   # add by why2011btv
+            self._cal_loss(lstm_outputs_packed)
+          
+    def _cal_loss(self, lstm_outputs_packed):   # add by why2011btv
+        
         Create:
             self.batch_softmax_norm_logit
-        '''
-        #batch_size = self.options['batch_size']
-        #unroll_steps = self.options['unroll_steps']
+        
+        batch_size = self.options['batch_size']
+        unroll_steps = self.options['unroll_steps']
         projection_dim = self.options['lstm']['projection_dim']
         #n_tokens_vocab = self.options['n_tokens_vocab']
+        num_steps = unroll_steps * 2
+        def _get_next_token_placeholders(suffix):
+            name = 'next_token_id' + suffix
+            id_placeholder = tf.placeholder(DTYPE_INT,
+                                   shape=(batch_size, num_steps),
+                                   name=name)
+            return id_placeholder
 
-        next_ids = [self.next_token_id]    
+        # get the window and weight placeholders
+        self.next_token_id = _get_next_token_placeholders('')
+        if self.bidirectional:
+            self.next_token_id_reverse = _get_next_token_placeholders(
+                '_reverse')
+            
+        if self.bidirectional:
+            next_ids = [self.next_token_id, self.next_token_id_reverse]
+        else:
+            next_ids = [self.next_token_id]
+            
+        self.batch_softmax_norm_logit = [] 
         # next_token_id: batch_size * [rel, tail, eos] (needs to be written by myself in the data generating process)
         for id_placeholder, _lstm_outputs_packed in zip(next_ids, lstm_outputs_packed):    
             # lstm_outputs use list because of bidirectional LM
@@ -453,11 +480,11 @@ class LanguageModel(object):
 
             with tf.control_dependencies([_lstm_outputs_packed]):    
                 # control_dependencies: you must calcalate lstm_output_flat first before entering the following part
-                predict_tail = _lstm_outputs_packed[:,1,:]
+                predict_tail = _lstm_outputs_packed[:,0,:]
                 un_norm = tf.matmul(predict_tail, tf.transpose(self.softmax_W)) + self.softmax_b
-                self.batch_softmax_norm_logit = tf.nn.softmax(un_norm)    # [batch_size, vocab_size]
-
-    def _build_loss(self, lstm_outputs):
+                self.batch_softmax_norm_logit.append(tf.nn.softmax(un_norm))    # [batch_size, vocab_size]
+'''
+    def _build_loss(self, lstm_outputs, lstm_outputs_packed):
         '''
         Create:
             self.total_loss: total loss op for training
@@ -465,16 +492,17 @@ class LanguageModel(object):
             self.next_token_id / _reverse: placeholders for gold input
 
         '''
+        print("running function _build_loss ~~~~~~~~~~~~~~~~~~~~")
         batch_size = self.options['batch_size']
         unroll_steps = self.options['unroll_steps']
 
         n_tokens_vocab = self.options['n_tokens_vocab']
-
+        num_steps = unroll_steps * 2
         # DEFINE next_token_id and *_reverse placeholders for the gold input
         def _get_next_token_placeholders(suffix):
             name = 'next_token_id' + suffix
             id_placeholder = tf.placeholder(DTYPE_INT,
-                                   shape=(batch_size, 80),
+                                   shape=(batch_size, num_steps),
                                    name=name)
             return id_placeholder
 
@@ -483,6 +511,18 @@ class LanguageModel(object):
         if self.bidirectional:
             self.next_token_id_reverse = _get_next_token_placeholders(
                 '_reverse')
+            
+        if self.bidirectional:
+            next_ids = [self.next_token_id, self.next_token_id_reverse]
+        else:
+            next_ids = [self.next_token_id]        
+        
+        
+        if self.bidirectional:
+            self.next_token_id_reverse = tf.placeholder(DTYPE_INT,
+                                   shape=(batch_size, num_steps))
+                                   #name=name)
+          
 
         # DEFINE THE SOFTMAX VARIABLES
         # get the dimension of the softmax weights
@@ -555,6 +595,22 @@ class LanguageModel(object):
                                     + self.individual_losses[1])
         else:
             self.total_loss = self.individual_losses[0]
+        
+        
+        self.batch_softmax_norm_logit = [] 
+        # next_token_id: batch_size * [rel, tail, eos] (needs to be written by myself in the data generating process)
+        for id_placeholder, _lstm_outputs_packed in zip(next_ids, lstm_outputs_packed):    
+            # lstm_outputs use list because of bidirectional LM
+            # flatten the LSTM output and next token id gold to shape:
+            # _lstm_outputs_packed: [batch_size, unroll_steps, projection_dim]
+            next_token_id_flat = tf.reshape(id_placeholder, [-1, 1])    
+            # id_placeholder: (batch_size, unroll_steps)   unroll_steps = 3
+
+            with tf.control_dependencies([_lstm_outputs_packed]):    
+                # control_dependencies: you must calcalate lstm_output_flat first before entering the following part
+                predict_tail = _lstm_outputs_packed[:,0,:]
+                un_norm = tf.matmul(predict_tail, tf.transpose(self.softmax_W)) + self.softmax_b
+                self.batch_softmax_norm_logit.append(tf.nn.softmax(un_norm))    # [batch_size, vocab_size]  
 
 
 def average_gradients(tower_grads, batch_size, options):
@@ -815,8 +871,9 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
 
         batch_size = options['batch_size']
         unroll_steps = options['unroll_steps']
+        num_steps = unroll_steps * 2
         n_train_tokens = options.get('n_train_tokens', 768648884)
-        n_tokens_per_batch = batch_size * 80 * n_gpus
+        n_tokens_per_batch = batch_size * num_steps * n_gpus
         n_batches_per_epoch = int(n_train_tokens / n_tokens_per_batch)
         n_batches_total = options['n_epochs'] * n_batches_per_epoch
         print("Training for %s epochs and %s batches" % (
@@ -836,13 +893,13 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
         if not char_inputs:
             feed_dict = {
                 model.token_ids:
-                    np.zeros([batch_size, 80], dtype=np.int64)
+                    np.zeros([batch_size, num_steps], dtype=np.int64)
                 for model in models
             }
         else:
             feed_dict = {
                 model.tokens_characters:
-                    np.zeros([batch_size, unroll_steps, max_chars],
+                    np.zeros([batch_size, num_steps, max_chars],
                              dtype=np.int32)
                 for model in models
             }
@@ -851,13 +908,13 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
             if not char_inputs:
                 feed_dict.update({
                     model.token_ids_reverse:
-                        np.zeros([batch_size, unroll_steps], dtype=np.int64)
+                        np.zeros([batch_size, num_steps], dtype=np.int64)
                     for model in models
                 })
             else:
                 feed_dict.update({
                     model.tokens_characters_reverse:
-                        np.zeros([batch_size, unroll_steps, max_chars],
+                        np.zeros([batch_size, num_steps, max_chars],
                                  dtype=np.int32)
                     for model in models
                 })
@@ -865,7 +922,7 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
         init_state_values = sess.run(init_state_tensors, feed_dict=feed_dict)
 
         t1 = time.time()
-        data_gen = data.iter_batches(batch_size * n_gpus, 80)
+        data_gen = data.iter_batches(batch_size * n_gpus, num_steps)
         for batch_no, batch in enumerate(data_gen, start=1):
 
             # slice the input in the batch for the feed_dict
@@ -886,7 +943,7 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
             # This runs the train_op, summaries and the "final_state_tensors"
             #   which just returns the tensors, passing in the initial
             #   state tensors, token ids and next token ids
-            if batch_no % 1250 != 0:
+            if batch_no % 250 != 0:
                 ret = sess.run(
                     [train_op, summary_op, train_perplexity] +
                                                 final_state_tensors,
@@ -994,8 +1051,8 @@ def test(options, ckpt_file, data, batch_size=256):
     if char_inputs:
         max_chars = options['char_cnn']['max_characters_per_token']
 
-    unroll_steps = 3
-
+    unroll_steps = 1
+    num_steps = 2
     config = tf.ConfigProto(allow_soft_placement=True)
     with tf.Session(config=config) as sess:
         with tf.device('/gpu:0'), tf.variable_scope('lm'):
@@ -1003,7 +1060,7 @@ def test(options, ckpt_file, data, batch_size=256):
             # NOTE: the number of tokens we skip in the last incomplete
             # batch is bounded above batch_size * unroll_steps
             test_options['batch_size'] = batch_size
-            test_options['unroll_steps'] = 3
+            test_options['unroll_steps'] = 1
             model = LanguageModel(test_options, False)
             # we use the "Saver" class to load the variables
             loader = tf.train.Saver()
@@ -1016,23 +1073,23 @@ def test(options, ckpt_file, data, batch_size=256):
         if not char_inputs:
             feed_dict = {
                 model.token_ids:
-                        np.zeros([batch_size, unroll_steps], dtype=np.int64)
+                        np.zeros([batch_size, num_steps], dtype=np.int64)
             }
             if bidirectional:
                 feed_dict.update({
                     model.token_ids_reverse:
-                        np.zeros([batch_size, unroll_steps], dtype=np.int64)
+                        np.zeros([batch_size, num_steps], dtype=np.int64)
                 })  
         else:
             feed_dict = {
                 model.tokens_characters:
-                   np.zeros([batch_size, unroll_steps, max_chars],
+                   np.zeros([batch_size, num_steps, max_chars],
                                  dtype=np.int32)
             }
             if bidirectional:
                 feed_dict.update({
                     model.tokens_characters_reverse:
-                        np.zeros([batch_size, unroll_steps, max_chars],
+                        np.zeros([batch_size, num_steps, max_chars],
                             dtype=np.int32)
                 })
 
@@ -1045,18 +1102,29 @@ def test(options, ckpt_file, data, batch_size=256):
         total_loss = 0.0
         predict_dict = []
         for batch_no, batch in enumerate(
-                                data.iter_batches(batch_size, 3), start=1):
+                                data.iter_batches(batch_size, num_steps), start=1):
             # slice the input in the batch for the feed_dict
             X = batch
-
+            print(batch['next_token_id'].shape)
+            print(batch['next_token_id'].dtype)
             feed_dict = {t: v for t, v in zip(
                                         init_state_tensors, init_state_values)}
-
+            '''
+            my_dict = {model.token_ids:X['token_ids'],
+                       model.next_token_id:X['next_token_id']}
+                       #model.token_ids_reverse:X['token_ids_reverse'],
+                       #model.next_token_id_reverse:X['next_token_id_reverse']}
+            print("X['next_token_id']: ", X['next_token_id'])
+            print("model.next_token_id: ", sess.run(model.next_token_id, feed_dict={model.next_token_id:X['next_token_id']}))
+            feed_dict.update(my_dict)
+            '''
             feed_dict.update(
                 _get_feed_dict_from_X(X, 0, X['token_ids'].shape[0], model, 
                                           char_inputs, bidirectional)
             )
-
+            #print("model.next_token_id: dtype",feed_dict[model.next_token_id].dtype)
+            #print("feed_dict:",feed_dict)
+            #print("model:", model)
             ret = sess.run(
                 [model.total_loss, final_state_tensors, model.batch_softmax_norm_logit],
                 feed_dict=feed_dict
@@ -1066,7 +1134,7 @@ def test(options, ckpt_file, data, batch_size=256):
             loss, init_state_values, predicted_logit = ret
             predict_dict.append(predicted_logit)
             print("prediction finished for batch %d" % (batch_no))
-            
+            print("loss for this batch is %f" % (loss))
             batch_losses.append(loss)
             batch_perplexity = np.exp(loss)
             total_loss += loss
@@ -1074,8 +1142,10 @@ def test(options, ckpt_file, data, batch_size=256):
 
             print("batch=%s, batch_perplexity=%s, avg_perplexity=%s, time=%s" %
                 (batch_no, batch_perplexity, avg_perplexity, time.time() - t1))
-            
-    with open("/home/why2011btv/predicted_logit.txt", 'wb') as file_out:    # add by why2011btv
+    now = datetime.now() # 获取当前datetime
+    a = now.strftime('%Y-%m-%d_%H-%M-%S')
+    path_out = "/home/why2011btv/" + a + "predicted_logit.txt"
+    with open(path_out, 'wb') as file_out:    # add by why2011btv
         pickle.dump(predict_dict, file_out)
     avg_loss = np.mean(batch_losses)
     print("FINSIHED!  AVERAGE PERPLEXITY = %s" % np.exp(avg_loss))

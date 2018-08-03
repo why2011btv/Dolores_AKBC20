@@ -1,0 +1,338 @@
+why2011btv@nlp:~/research/node2vec$ !1405
+python src/main.py --input graph/train2id.edgelist --output emb/karate.emd --relation
+2018-08-01 11:03:22.352303
+
+Graph established!
+2
+10233
+finish batch_no 100
+len(rank_recipr_list):  200
+MRR for tail substitution with no type constraint: 0.220589
+finish batch_no 200
+len(rank_recipr_list):  400
+MRR for tail substitution with no type constraint: 0.224129
+finish batch_no 300
+len(rank_recipr_list):  600
+MRR for tail substitution with no type constraint: 0.256057
+finish batch_no 400
+len(rank_recipr_list):  800
+MRR for tail substitution with no type constraint: 0.257375
+finish batch_no 500
+len(rank_recipr_list):  1000
+MRR for tail substitution with no type constraint: 0.254740
+finish batch_no 600
+len(rank_recipr_list):  1200
+MRR for tail substitution with no type constraint: 0.252520
+finish batch_no 700
+len(rank_recipr_list):  1400
+MRR for tail substitution with no type constraint: 0.252334
+finish batch_no 800
+len(rank_recipr_list):  1600
+MRR for tail substitution with no type constraint: 0.251715
+finish batch_no 900
+len(rank_recipr_list):  1800
+MRR for tail substitution with no type constraint: 0.246961
+current node 14514 does not exist!
+finish batch_no 1000
+len(rank_recipr_list):  2000
+MRR for tail substitution with no type constraint: 0.246755
+finish batch_no 1100
+len(rank_recipr_list):  2200
+MRR for tail substitution with no type constraint: 0.249646
+current node 14515 does not exist!
+current node 14516 does not exist!
+finish batch_no 1200
+len(rank_recipr_list):  2400
+MRR for tail substitution with no type constraint: 0.249918
+current node 14517 does not exist!
+current node 14518 does not exist!
+finish batch_no 1300
+len(rank_recipr_list):  2600
+MRR for tail substitution with no type constraint: 0.247498
+finish batch_no 1400
+len(rank_recipr_list):  2800
+MRR for tail substitution with no type constraint: 0.246914
+finish batch_no 1500
+len(rank_recipr_list):  3000
+MRR for tail substitution with no type constraint: 0.248434
+finish batch_no 1600
+len(rank_recipr_list):  3200
+MRR for tail substitution with no type constraint: 0.246757
+finish batch_no 1700
+len(rank_recipr_list):  3400
+MRR for tail substitution with no type constraint: 0.248309
+finish batch_no 1800
+len(rank_recipr_list):  3600
+MRR for tail substitution with no type constraint: 0.248142
+finish batch_no 1900
+len(rank_recipr_list):  3800
+MRR for tail substitution with no type constraint: 0.249400
+finish batch_no 2000
+len(rank_recipr_list):  4000
+MRR for tail substitution with no type constraint: 0.248226
+finish batch_no 2100
+len(rank_recipr_list):  4200
+MRR for tail substitution with no type constraint: 0.247565
+current node 14519 does not exist!
+current node 14520 does not exist!
+current node 14521 does not exist!
+finish batch_no 2200
+len(rank_recipr_list):  4400
+MRR for tail substitution with no type constraint: 0.248254
+finish batch_no 2300
+len(rank_recipr_list):  4600
+MRR for tail substitution with no type constraint: 0.248398
+finish batch_no 2400
+len(rank_recipr_list):  4800
+MRR for tail substitution with no type constraint: 0.248216
+current node 14522 does not exist!
+finish batch_no 2500
+len(rank_recipr_list):  5000
+MRR for tail substitution with no type constraint: 0.250231
+finish batch_no 2600
+len(rank_recipr_list):  5200
+MRR for tail substitution with no type constraint: 0.251550
+finish batch_no 2700
+len(rank_recipr_list):  5400
+MRR for tail substitution with no type constraint: 0.251353
+current node 14523 does not exist!
+current node 14524 does not exist!
+finish batch_no 2800
+len(rank_recipr_list):  5600
+MRR for tail substitution with no type constraint: 0.251807
+finish batch_no 2900
+len(rank_recipr_list):  5800
+MRR for tail substitution with no type constraint: 0.251073
+finish batch_no 3000
+len(rank_recipr_list):  6000
+MRR for tail substitution with no type constraint: 0.249388
+finish batch_no 3100
+len(rank_recipr_list):  6200
+MRR for tail substitution with no type constraint: 0.248856
+finish batch_no 3200
+len(rank_recipr_list):  6400
+MRR for tail substitution with no type constraint: 0.249121
+finish batch_no 3300
+len(rank_recipr_list):  6600
+MRR for tail substitution with no type constraint: 0.248191
+current node 14526 does not exist!
+current node 14528 does not exist!
+finish batch_no 3400
+len(rank_recipr_list):  6800
+MRR for tail substitution with no type constraint: 0.248431
+current node 14529 does not exist!
+current node 14530 does not exist!
+finish batch_no 3500
+len(rank_recipr_list):  7000
+MRR for tail substitution with no type constraint: 0.248153
+finish batch_no 3600
+len(rank_recipr_list):  7200
+MRR for tail substitution with no type constraint: 0.247567
+finish batch_no 3700
+len(rank_recipr_list):  7400
+MRR for tail substitution with no type constraint: 0.249285
+finish batch_no 3800
+len(rank_recipr_list):  7600
+MRR for tail substitution with no type constraint: 0.249821
+finish batch_no 3900
+len(rank_recipr_list):  7800
+MRR for tail substitution with no type constraint: 0.249239
+current node 14531 does not exist!
+finish batch_no 4000
+len(rank_recipr_list):  8000
+MRR for tail substitution with no type constraint: 0.249555
+finish batch_no 4100
+len(rank_recipr_list):  8200
+MRR for tail substitution with no type constraint: 0.250072
+finish batch_no 4200
+len(rank_recipr_list):  8400
+MRR for tail substitution with no type constraint: 0.250047
+finish batch_no 4300
+len(rank_recipr_list):  8600
+MRR for tail substitution with no type constraint: 0.248566
+finish batch_no 4400
+len(rank_recipr_list):  8800
+MRR for tail substitution with no type constraint: 0.247945
+finish batch_no 4500
+len(rank_recipr_list):  9000
+MRR for tail substitution with no type constraint: 0.247403
+finish batch_no 4600
+len(rank_recipr_list):  9200
+MRR for tail substitution with no type constraint: 0.247861
+current node 14532 does not exist!
+finish batch_no 4700
+len(rank_recipr_list):  9400
+MRR for tail substitution with no type constraint: 0.247813
+finish batch_no 4800
+len(rank_recipr_list):  9600
+MRR for tail substitution with no type constraint: 0.248420
+finish batch_no 4900
+len(rank_recipr_list):  9800
+MRR for tail substitution with no type constraint: 0.248431
+finish batch_no 5000
+len(rank_recipr_list):  10000
+MRR for tail substitution with no type constraint: 0.247949
+current node 14533 does not exist!
+finish batch_no 5100
+len(rank_recipr_list):  10200
+MRR for tail substitution with no type constraint: 0.247827
+current node 14534 does not exist!
+finish batch_no 5200
+len(rank_recipr_list):  10400
+MRR for tail substitution with no type constraint: 0.248411
+finish batch_no 5300
+len(rank_recipr_list):  10600
+MRR for tail substitution with no type constraint: 0.248274
+finish batch_no 5400
+len(rank_recipr_list):  10800
+MRR for tail substitution with no type constraint: 0.247921
+finish batch_no 5500
+len(rank_recipr_list):  11000
+MRR for tail substitution with no type constraint: 0.248256
+finish batch_no 5600
+len(rank_recipr_list):  11200
+MRR for tail substitution with no type constraint: 0.247565
+finish batch_no 5700
+len(rank_recipr_list):  11400
+MRR for tail substitution with no type constraint: 0.247292
+finish batch_no 5800
+len(rank_recipr_list):  11600
+MRR for tail substitution with no type constraint: 0.247177
+current node 14535 does not exist!
+finish batch_no 5900
+len(rank_recipr_list):  11800
+MRR for tail substitution with no type constraint: 0.247144
+finish batch_no 6000
+len(rank_recipr_list):  12000
+MRR for tail substitution with no type constraint: 0.246015
+finish batch_no 6100
+len(rank_recipr_list):  12200
+MRR for tail substitution with no type constraint: 0.246142
+finish batch_no 6200
+len(rank_recipr_list):  12400
+MRR for tail substitution with no type constraint: 0.246291
+finish batch_no 6300
+len(rank_recipr_list):  12600
+MRR for tail substitution with no type constraint: 0.246856
+current node 14536 does not exist!
+finish batch_no 6400
+len(rank_recipr_list):  12800
+MRR for tail substitution with no type constraint: 0.247228
+finish batch_no 6500
+len(rank_recipr_list):  13000
+MRR for tail substitution with no type constraint: 0.247299
+finish batch_no 6600
+len(rank_recipr_list):  13200
+MRR for tail substitution with no type constraint: 0.247032
+finish batch_no 6700
+len(rank_recipr_list):  13400
+MRR for tail substitution with no type constraint: 0.246717
+finish batch_no 6800
+len(rank_recipr_list):  13600
+MRR for tail substitution with no type constraint: 0.246413
+finish batch_no 6900
+len(rank_recipr_list):  13800
+MRR for tail substitution with no type constraint: 0.246758
+finish batch_no 7000
+len(rank_recipr_list):  14000
+MRR for tail substitution with no type constraint: 0.246915
+finish batch_no 7100
+len(rank_recipr_list):  14200
+MRR for tail substitution with no type constraint: 0.247476
+finish batch_no 7200
+len(rank_recipr_list):  14400
+MRR for tail substitution with no type constraint: 0.247077
+finish batch_no 7300
+len(rank_recipr_list):  14600
+MRR for tail substitution with no type constraint: 0.246880
+finish batch_no 7400
+len(rank_recipr_list):  14800
+MRR for tail substitution with no type constraint: 0.246930
+finish batch_no 7500
+len(rank_recipr_list):  15000
+MRR for tail substitution with no type constraint: 0.246589
+finish batch_no 7600
+len(rank_recipr_list):  15200
+MRR for tail substitution with no type constraint: 0.246787
+finish batch_no 7700
+len(rank_recipr_list):  15400
+MRR for tail substitution with no type constraint: 0.246480
+finish batch_no 7800
+len(rank_recipr_list):  15600
+MRR for tail substitution with no type constraint: 0.246544
+finish batch_no 7900
+len(rank_recipr_list):  15800
+MRR for tail substitution with no type constraint: 0.246038
+finish batch_no 8000
+len(rank_recipr_list):  16000
+MRR for tail substitution with no type constraint: 0.246054
+finish batch_no 8100
+len(rank_recipr_list):  16200
+MRR for tail substitution with no type constraint: 0.246497
+current node 14537 does not exist!
+finish batch_no 8200
+len(rank_recipr_list):  16400
+MRR for tail substitution with no type constraint: 0.246497
+finish batch_no 8300
+len(rank_recipr_list):  16600
+MRR for tail substitution with no type constraint: 0.246403
+finish batch_no 8400
+len(rank_recipr_list):  16800
+MRR for tail substitution with no type constraint: 0.246378
+finish batch_no 8500
+len(rank_recipr_list):  17000
+MRR for tail substitution with no type constraint: 0.246524
+finish batch_no 8600
+len(rank_recipr_list):  17200
+MRR for tail substitution with no type constraint: 0.246127
+finish batch_no 8700
+len(rank_recipr_list):  17400
+MRR for tail substitution with no type constraint: 0.246092
+current node 14538 does not exist!
+finish batch_no 8800
+len(rank_recipr_list):  17600
+MRR for tail substitution with no type constraint: 0.246143
+finish batch_no 8900
+len(rank_recipr_list):  17800
+MRR for tail substitution with no type constraint: 0.246206
+finish batch_no 9000
+len(rank_recipr_list):  18000
+MRR for tail substitution with no type constraint: 0.245331
+finish batch_no 9100
+len(rank_recipr_list):  18200
+MRR for tail substitution with no type constraint: 0.245173
+finish batch_no 9200
+len(rank_recipr_list):  18400
+MRR for tail substitution with no type constraint: 0.245000
+current node 14539 does not exist!
+finish batch_no 9300
+len(rank_recipr_list):  18600
+MRR for tail substitution with no type constraint: 0.245221
+current node 14540 does not exist!
+finish batch_no 9400
+len(rank_recipr_list):  18800
+MRR for tail substitution with no type constraint: 0.245769
+finish batch_no 9500
+len(rank_recipr_list):  19000
+MRR for tail substitution with no type constraint: 0.245831
+finish batch_no 9600
+len(rank_recipr_list):  19200
+MRR for tail substitution with no type constraint: 0.246270
+finish batch_no 9700
+len(rank_recipr_list):  19400
+MRR for tail substitution with no type constraint: 0.246098
+finish batch_no 9800
+len(rank_recipr_list):  19600
+MRR for tail substitution with no type constraint: 0.246147
+finish batch_no 9900
+len(rank_recipr_list):  19800
+MRR for tail substitution with no type constraint: 0.246061
+finish batch_no 10000
+len(rank_recipr_list):  20000
+MRR for tail substitution with no type constraint: 0.245695
+finish batch_no 10100
+len(rank_recipr_list):  20200
+MRR for tail substitution with no type constraint: 0.245576
+finish batch_no 10200
+len(rank_recipr_list):  20400
+MRR for tail substitution with no type constraint: 0.245433

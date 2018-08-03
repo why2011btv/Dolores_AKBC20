@@ -39,7 +39,7 @@ def look_up(input_ID):
         else:
 
 
-            print(input_ID)
+            #print(input_ID)
             #print(name_ent)
             a = name_ent.split(' ')
             m = ''
@@ -48,7 +48,7 @@ def look_up(input_ID):
                     m = m + a[i] + '_'
                 else:
                     m = m + a[i]
-            print(m)
+            #print(m)
             return_val = m
     elif input_ID <= 14777:
         
@@ -65,7 +65,8 @@ with h5py.File('./20180729.hdf5','r') as fin:
 ent_emb = a[0:14541,:]
 rel_emb = a[14541:14778,:]
 with open('./20180730.txt','w') as fileout:
-    line = '<14541> <100>'
+    line = '<14541> <100>\n'
     fileout.write(line)
     for i in range(14541):
-        line = '<' + look_up(i) + '> <' + str(ent_emb[i].tolist()) + '>' 
+        line = '<' + look_up(i) + '> <' + str(ent_emb[i].tolist()) + '>\n'
+        fileout.write(line)
