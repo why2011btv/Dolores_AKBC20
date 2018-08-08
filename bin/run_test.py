@@ -4,7 +4,7 @@ import pickle
 from bilm.training import test, load_options_latest_checkpoint, load_vocab
 from bilm.data import LMDataset, BidirectionalLMDataset
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 class MYDataset(object):
     def __init__(self, paths_repre_by_IDs):
@@ -34,14 +34,14 @@ class MYDataset(object):
             yield X
 
 
-def main():
+def main(args):
     ent_num = 14541
     with open("/home/why2011btv/research/OpenKE/benchmarks/FB15K237/test2id.txt",'r') as f:
     #with open("/home/why2011btv/KG-embedding/obama.txt",'r') as f:
         lines = f.readlines()
         triplet_num = len(lines)-1
         print("triplet_num:",triplet_num)
-        triplet_num = 300
+        #triplet_num = 600
         test_set = np.zeros([triplet_num, 3],np.int32)
         i = 0
         for line in lines:
@@ -57,20 +57,24 @@ def main():
                 test_set[i][0] = int(a[0])
                 test_set[i][1] = int(a[2]) + ent_num
                 test_set[i][2] = int(a[1])
-                print("a[0]:",test_set[i][0])
-                print("a[2]:",test_set[i][1])
-                print("a[1]:",test_set[i][2])
-                print("a:",aa)
+                #print("a[0]:",test_set[i][0])
+                #print("a[2]:",test_set[i][1])
+                #print("a[1]:",test_set[i][2])
+                #print("a:",aa)
                 #print(test_set)
                 i += 1
 
     
-    options, ckpt_file = load_options_latest_checkpoint("/home/why2011btv/KG-embedding/20180802/")
+    options, ckpt_file = load_options_latest_checkpoint(args.save_dir)
     data = MYDataset(test_set)
     
-    test(options, ckpt_file, data, batch_size=2)
+    perplexity = test(options, ckpt_file, data, batch_size=2)
+    return perplexity
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description='Compute test perplexity')
+    parser.add_argument('--save_dir', help='Location of checkpoint files')
+    args = parser.parse_args()
+    main(args)
 

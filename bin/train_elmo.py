@@ -6,7 +6,7 @@ import numpy as np
 from bilm.training import train, load_options_latest_checkpoint, load_vocab
 from bilm.data import BidirectionalLMDataset
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 
 class MYDataset(object):
@@ -36,7 +36,7 @@ class MYDataset(object):
                  'next_token_id_reverse': next_token_id_reverse}
             yield X
 
-def main():
+def main(args):
     file_input_20180713 = open("/home/why2011btv/research/node2vec/ID_together_walk_X_ids.txt",'rb')
     context_ids_large = pickle.load(file_input_20180713)
     #context_ids_large = context_ids_large[0:10,:]
@@ -45,7 +45,7 @@ def main():
     #vocab = load_vocab(args.vocab_file, 50)
 
     # define the options
-    batch_size = 10  # batch size for each GPU
+    batch_size = 200  # batch size for each GPU
     n_gpus = 1
 
     # number of tokens in training data
@@ -56,7 +56,7 @@ def main():
 
     options = {
      'bidirectional': True,
-
+     'learning_rate': 0.001,
 #     'char_cnn': {'activation': 'relu',
 #      'embedding': {'dim': 16},
 #      'filters': [[1, 32],
@@ -75,14 +75,14 @@ def main():
      'lstm': {
       'cell_clip': 3,
       'dim': 800,
-      'n_layers': 2,
+      'n_layers': 4,
       'proj_clip': 3,
-      'projection_dim': 100,
+      'projection_dim': 50,
       'use_skip_connections': True},
     
      'all_clip_norm_val': 10.0,
     
-     'n_epochs': 6,
+     'n_epochs': 200,
      'n_train_tokens': n_train_tokens,
      'batch_size': batch_size,
      'n_tokens_vocab': n_tokens_vocab,
@@ -99,18 +99,19 @@ def main():
     #    X = batch
     #    print(batch_no, batch)
     
-    save_dir = './20180802'
+    save_dir = args.save_dir
     tf_save_dir = save_dir
     tf_log_dir = save_dir
     train(options, data, n_gpus, tf_save_dir, tf_log_dir)
+          #, restart_ckpt_file = "/home/why2011btv/KG-embedding/20180803/model.ckpt-50000")
 
 
 if __name__ == '__main__':
-    #parser = argparse.ArgumentParser()
-    #parser.add_argument('--save_dir', help='Location of checkpoint files')
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--save_dir', help='Location of checkpoint files')
     #parser.add_argument('--vocab_file', help='Vocabulary file')
     #parser.add_argument('--train_prefix', help='Prefix for train files')
 
-    #args = parser.parse_args()
-    #main(args)
-    main()
+    args = parser.parse_args()
+    main(args)
+    #main()

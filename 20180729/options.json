@@ -1,1 +1,0 @@
-{"lstm": {"cell_clip": 3, "n_layers": 2, "projection_dim": 100, "use_skip_connections": true, "proj_clip": 3, "dim": 800}, "batch_size": 10, "n_epochs": 10, "n_negative_samples_batch": 8192, "bidirectional": false, "n_tokens_vocab": 14779, "dropout": 0.1, "n_train_tokens": 11749050, "all_clip_norm_val": 10.0, "unroll_steps": 40}

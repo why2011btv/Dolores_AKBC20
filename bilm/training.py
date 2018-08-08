@@ -11,8 +11,74 @@ import tensorflow as tf
 import numpy as np
 from datetime import datetime
 from tensorflow.python.ops.init_ops import glorot_uniform_initializer
-
+from .main import calcu_METRIC
 from .data import Vocabulary, UnicodeCharsVocabulary
+class MY_test_Dataset(object):
+    def __init__(self, paths_repre_by_IDs):
+        self.paths_repre_by_IDs = paths_repre_by_IDs
+    def iter_batches(self, batch_size, num_steps):
+        i = 0
+        while i <= self.paths_repre_by_IDs.shape[0]:
+            if (i + batch_size) > self.paths_repre_by_IDs.shape[0]:
+                break
+            token_ids = np.zeros([batch_size, num_steps], np.int32)
+            next_token_id = np.zeros([batch_size, num_steps], np.int32)
+            token_ids_reverse = np.zeros([batch_size, num_steps], np.int32)
+            next_token_id_reverse = np.zeros([batch_size, num_steps], np.int32)
+            
+            token_ids = self.paths_repre_by_IDs[i:i+batch_size,0:-1]    # [batch_size, num_steps] (model.token_ids)
+            next_token_id[:,0:-1] = self.paths_repre_by_IDs[i:i+batch_size,2:]
+            next_token_id[:,-1:] = np.full((batch_size,1), 14778)
+            
+            token_ids_reverse = np.flip(self.paths_repre_by_IDs[i:i+batch_size,1:],1)
+            next_token_id_reverse[:,0:-1] = np.flip(self.paths_repre_by_IDs[i:i+batch_size,:-2],1)
+            next_token_id_reverse[:,-1:] = np.full((batch_size,1), 14778)
+            i += batch_size
+            X = {'token_ids': token_ids,
+                 'next_token_id': next_token_id,
+                 'token_ids_reverse': token_ids_reverse,
+                 'next_token_id_reverse': next_token_id_reverse}
+            yield X
+
+
+
+def run_test(dir_train):
+    ent_num = 14541
+    with open("/home/why2011btv/research/OpenKE/benchmarks/FB15K237/test2id.txt",'r') as f:
+    #with open("/home/why2011btv/KG-embedding/obama.txt",'r') as f:
+        lines = f.readlines()
+        triplet_num = len(lines)-1
+        print("triplet_num:",triplet_num)
+        triplet_num = 600
+        test_set = np.zeros([triplet_num, 3],np.int32)
+        i = 0
+        for line in lines:
+            a = line.split(' ')
+            if len(a) > 1 and i<triplet_num:
+                #a[2] = (a[2])[:-1] #because of newline
+                #a[1] = a[1][:-1]
+                
+#            test_set[i][0] = int(a[0])
+#            test_set[i][1] = int(a[2])
+#            test_set[i][2] = int(a[1])
+                aa = 1
+                test_set[i][0] = int(a[0])
+                test_set[i][1] = int(a[2]) + ent_num
+                test_set[i][2] = int(a[1])
+                #print("a[0]:",test_set[i][0])
+                #print("a[2]:",test_set[i][1])
+                #print("a[1]:",test_set[i][2])
+                #print("a:",aa)
+                #print(test_set)
+                i += 1
+
+    
+    options, ckpt_file = load_options_latest_checkpoint(dir_train)
+    data = MYDataset(test_set)
+    
+    perplexity = test(options, ckpt_file, data, batch_size=2)
+    return perplexity
+
 
 DTYPE = 'float32'
 DTYPE_INT = 'int64'
@@ -76,7 +142,7 @@ class LanguageModel(object):
         unroll_steps = self.options['unroll_steps']
         num_steps = unroll_steps * 2
         # LSTM options
-        projection_dim = self.options['lstm']['projection_dim']
+        projection_dim = self.options['lstm']['projection_dim']    # 100
 
         # the input token_ids and word embeddings
         self.token_ids = tf.placeholder(DTYPE_INT,
@@ -328,7 +394,8 @@ class LanguageModel(object):
         
         # LSTM options
         lstm_dim = self.options['lstm']['dim']
-        projection_dim = self.options['lstm']['projection_dim']
+        projection_dim = self.options['lstm']['projection_dim']   # 100
+        concat_dim = projection_dim * 2                           # 200
         n_lstm_layers = self.options['lstm'].get('n_layers', 1)
         dropout = self.options['dropout']
         keep_prob = 1.0 - dropout
@@ -369,7 +436,7 @@ class LanguageModel(object):
                 if projection_dim < lstm_dim:
                     # are projecting down output
                     lstm_cell = tf.nn.rnn_cell.LSTMCell(
-                        lstm_dim, num_proj=200,
+                        lstm_dim, num_proj=concat_dim,
                         cell_clip=cell_clip, proj_clip=proj_clip)
                 else:
                     lstm_cell = tf.nn.rnn_cell.LSTMCell(
@@ -419,7 +486,7 @@ class LanguageModel(object):
             print("len(_lstm_output_unpacked): ",len(_lstm_output_unpacked))
             # (batch_size * unroll_steps, 512)
             lstm_output_flat = tf.reshape(
-                tf.stack(_lstm_output_unpacked, axis=1), [-1, 200])
+                tf.stack(_lstm_output_unpacked, axis=1), [-1, concat_dim])
             print("lstm_output_flat",lstm_output_flat)
             
             if self.is_training:
@@ -429,8 +496,8 @@ class LanguageModel(object):
             tf.add_to_collection('lstm_output_embeddings',
                 _lstm_output_unpacked)
             
-            post_lstm_output_flat = tf.reshape(lstm_output_flat, [batch_size*num_steps, 100])
-            post_lstm_output_packed = tf.reshape(tf.stack(_lstm_output_unpacked, axis=1), [batch_size, num_steps, 100])
+            post_lstm_output_flat = tf.reshape(lstm_output_flat, [batch_size*num_steps, projection_dim])
+            post_lstm_output_packed = tf.reshape(tf.stack(_lstm_output_unpacked, axis=1), [batch_size, num_steps, projection_dim])
             
             lstm_outputs_packed.append(post_lstm_output_packed)    # add by why2011btv
             
@@ -773,7 +840,7 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
         lr = options.get('learning_rate', 0.2)
         opt = tf.train.AdagradOptimizer(learning_rate=lr,
                                         initial_accumulator_value=1.0)
-
+        opt = tf.train.AdamOptimizer(learning_rate=lr)
         # calculate the gradients on each GPU
         tower_grads = []
         models = []
@@ -977,7 +1044,11 @@ def train(options, data, n_gpus, tf_save_dir, tf_log_dir,
 
             if (batch_no % 1250 == 0) or (batch_no == n_batches_total):
                 # save the model
-                checkpoint_path = os.path.join(tf_save_dir, 'model.ckpt')
+                #test_perplexity = run_test(tf_save_dir)
+                #if test_perplexity < 115:
+                #    break
+                _path_ = 'model' + '.ckpt'
+                checkpoint_path = os.path.join(tf_save_dir, _path_)
                 saver.save(sess, checkpoint_path, global_step=global_step)
 
             if batch_no == n_batches_total:
@@ -1142,14 +1213,19 @@ def test(options, ckpt_file, data, batch_size=256):
 
             print("batch=%s, batch_perplexity=%s, avg_perplexity=%s, time=%s" %
                 (batch_no, batch_perplexity, avg_perplexity, time.time() - t1))
-    now = datetime.now() # 获取当前datetime
-    a = now.strftime('%Y-%m-%d_%H-%M-%S')
-    path_out = "/home/why2011btv/" + a + "predicted_logit.txt"
-    with open(path_out, 'wb') as file_out:    # add by why2011btv
-        pickle.dump(predict_dict, file_out)
+    
     avg_loss = np.mean(batch_losses)
     print("FINSIHED!  AVERAGE PERPLEXITY = %s" % np.exp(avg_loss))
-
+    print("using ckpt_file: ", ckpt_file)
+    #now = datetime.now() # 获取当前datetime
+    #a = now.strftime('%Y-%m-%d_%H-%M-%S')
+    
+    #path_out = ckpt_file + '_' + a + "predicted_logit.txt"
+    #with open(path_out, 'wb') as file_out:    # add by why2011btv
+    #    pickle.dump(predict_dict, file_out)
+    calcu_METRIC(predict_dict)
+    
+    
     return np.exp(avg_loss)
 
 
