@@ -1,7 +1,8 @@
 Repository for "Dolores: Deep Contextualized Knowledge Graph Embeddings" (AKBC 2020)
 
 Steps 
-1) Convert entities and relations to ids, e.g. convert <br>
+1) Convert entities and relations to ids, e.g. <br>
+convert <br>
 /m/09v3jyg /m/0f8l9c /film/film/release_date_s./film/film_regional_release_date/film_release_region<br>
 to <br>
 0, 1, 0<br>
