@@ -11,6 +11,6 @@ ii) Edit line 99 in <a href="https://github.com/aditya-grover/node2vec/blob/mast
 iii) Hyperparameter includes: p, q, num_walks, walk_length
 3) Pretrain ELMo-based model M <br>
 Edit line 40 in ./bin/train_elmo.py to the file which contains the generated training paths<br>
-4) Save the model parameter
+4) Save the model M's parameters
 5) Combine the model with your downstream task model, fine-tune M's parameters, get the contextual representation, and make final predictions <br>
 Refer to ./bin/run_test.py
