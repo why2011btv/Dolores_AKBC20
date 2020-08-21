@@ -14,4 +14,5 @@ i) Edit line 40 in <a href="https://github.com/why2011btv/FB15K237/blob/master/b
 ii) Hyperparameter includes: layer_num, dimension, etc.
 4) Save the model M's parameters
 5) Combine the model with your downstream task model, fine-tune M's parameters, get the contextual representation, and make final predictions <br>
-Refer to <a href="https://github.com/why2011btv/FB15K237/blob/master/bin/run_test.py">./bin/run_test.py</a>
+i) Refer to <a href="https://github.com/why2011btv/FB15K237/blob/master/bin/run_test.py">./bin/run_test.py</a>
+ii) Hyperparameter includes: the weights for ELMo representations from each layer
