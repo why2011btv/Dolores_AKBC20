@@ -1,6 +1,6 @@
 Repository for "Dolores: Deep Contextualized Knowledge Graph Embeddings" (AKBC 2020)
 
-Steps for using contextualized embeddings for KG
+Steps for using contextualized KG embeddings
 1) Convert entities and relations to ids, e.g. <br>
 convert <br>
 /m/09v3jyg /m/0f8l9c /film/film/release_date_s./film/film_regional_release_date/film_release_region<br>
